@@ -1,22 +1,23 @@
 import Vue from 'vue'
 
 export default {
-  receiveAll (state, messages) {
-    let latestMessage
-    messages.forEach(message => {
+  receiveAll (state, data) {
+    data.threads.forEach((thread, index) => {
       // create new thread if the thread doesn't exist
-      if (!state.threads[message.threadID]) {
-        createThread(state, message.threadID, message.threadName)
+      var threadMessages = data.messages[index]
+      if (!state.threads[thread.id]) {
+        createThread(state, thread.id, thread.title)
       }
-      // mark the latest message
-      if (!latestMessage || message.timestamp > latestMessage.timestamp) {
-        latestMessage = message
-      }
+
       // add message
-      addMessage(state, message)
+      threadMessages.sort((m1, m2) => m1.timestamp - m2.timestamp).forEach(message => {
+        addMessage(state, message, state.threads[thread.id])
+      })
     })
     // set initial thread to the one with the latest message
-    setCurrentThread(state, latestMessage.threadID)
+    console.log(state.threads)
+    var lastThreadActive = data.threads[0] // state.threads.values().sort((t1, t2) => t1.lastMessage.timestamp - t2.lastMessage.timestamp)[0]
+    setCurrentThread(state, lastThreadActive.id)
   },
 
   receiveMessage (state, message) {
@@ -37,17 +38,19 @@ function createThread (state, id, name) {
   })
 }
 
-function addMessage (state, message) {
-  // add a `isRead` field before adding the message
-  message.isRead = message.threadID === state.currentThreadID
-  // add it to the thread it belongs to
-  const thread = state.threads[message.threadID]
+function addMessage (state, message, thread) {
   if (!thread.messages.some(id => id === message.id)) {
     thread.messages.push(message.id)
     thread.lastMessage = message
   }
   // add it to the messages map
-  Vue.set(state.messages, message.id, message)
+  var newMessage = {
+    id: message.id,
+    owner: message.owner,
+    text: message.text,
+    timestamp: message.timestamp
+  }
+  Vue.set(state.messages, message.id, newMessage)
 }
 
 function setCurrentThread (state, id) {
@@ -55,6 +58,4 @@ function setCurrentThread (state, id) {
   if (!state.threads[id]) {
     debugger
   }
-  // mark thread as read
-  state.threads[id].lastMessage.isRead = true
 }

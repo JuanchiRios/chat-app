@@ -1,8 +1,8 @@
 import * as api from '../api'
 
 export const getAllMessages = ({ commit }) => {
-  api.getAllMessages(messages => {
-    commit('receiveAll', messages)
+  api.getInitialState().then(data => {
+    commit('receiveAll', data)
   })
 }
 

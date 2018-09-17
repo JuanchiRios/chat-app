@@ -12,7 +12,7 @@ const state = {
     /*
     id: {
       id,
-      name,
+      title,
       messages: [...ids],
       lastMessage
     }
@@ -22,12 +22,18 @@ const state = {
     /*
     id: {
       id,
-      threadId,
-      threadName,
-      authorName,
+      owner,
       text,
       timestamp,
-      isRead
+    }
+    */},
+  publicThreads: {
+    /*
+    id: {
+      id,
+      title,
+      messages: [...ids],
+      lastMessage
     }
     */
   }
