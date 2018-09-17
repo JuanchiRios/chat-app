@@ -26,6 +26,12 @@ export default {
 
   switchThread (state, id) {
     setCurrentThread(state, id)
+  },
+  addMessagesAndThread (state, payload) {
+    if (!state.threads[payload.thread.id]) {
+      createThread(state, payload.thread.id, payload.thread.title)
+    }
+    payload.messages.forEach(message => addMessage(state, message, state.threads[payload.thread.id]))
   }
 }
 

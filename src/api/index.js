@@ -35,18 +35,33 @@ function transformFirestoreObject (object) {
   return cleanObject
 }
 
-export function createMessage ({ text, thread }, cb) {
+function transformFirestoreList (list) {
+  return list.map(element => transformFirestoreObject(element))
+}
+
+export function createMessage ({ text, thread }) {
   const timestamp = Date.now()
-  const id = 'm_' + timestamp
   const message = {
-    id,
     text,
     timestamp,
-    threadID: thread.id,
-    threadName: thread.name,
-    authorName: 'Evan'
+    owner: 'Juan'
   }
-  setTimeout(function () {
-    cb(message)
-  }, 16)
+
+  db.collection('messages').add(message).then(function (docRef) {
+    db.collection('threads').doc(thread.id).update({
+      'messages': Firebase.firestore.FieldValue.arrayUnion(docRef)
+    })
+  })
+}
+
+export function subscribeToDb (cb) {
+  db.doc('users/KIswUTHih1YWvMvLMUZC').get()
+    .then(DBcurrentUser => {
+      DBcurrentUser.data().threads.forEach(threadRef => {
+        threadRef.onSnapshot(snapshot => {
+          Promise.all(snapshot.data().messages.map(m => m.get()))
+            .then(messages => cb(transformFirestoreList(messages), transformFirestoreObject(snapshot)))
+        })
+      })
+    })
 }
